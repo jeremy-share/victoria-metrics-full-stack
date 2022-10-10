@@ -1,0 +1,14 @@
+users:
+
+- name: "backend-service"
+  bearer_token: "backend-service"
+  url_prefix: "http://vmagent:8429?extra_label=creator=internal"
+
+- name: "frontend-service-token"
+  bearer_token: "frontend-service-token"
+  url_prefix: "http://vmagent:8429?extra_label=creator=external"
+
+- name: "frontend-service-user"
+  username: "frontend_service_username"
+  password: "frontend_service_password"
+  url_prefix: "http://vmagent:8429?extra_label=creator=external"

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <module href="/components/head.html"></module>
+</head>
+<body>
+    <h1>Frontend service</h1>
+
+    <div>
+        <h2>Detections</h2>
+        <p>AI Detections (mock data, actually random)</p>
+        <ul id="detections">
+        </ul>
+    </div>
+
+    <div>
+        <h2>Detection Totals</h2>
+        <p>Totals since server loaded</p>
+        <ul id="detection-totals">
+        </ul>
+    </div>
+
+    <div>
+        <h2>Detection Accumulation</h2>
+        <p>Totals since page load</p>
+        <ul id="detection-accumulation">
+        </ul>
+    </div>
+
+    <div>
+        <h2>Controls</h2>
+        <ul>
+            <li><button id="send-ping">Send ping</button></li>
+        </ul>
+    </div>
+
+    <script src="./bundle.js"></script>
+</body>
+</html>

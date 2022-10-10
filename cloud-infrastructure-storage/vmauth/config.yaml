@@ -1,0 +1,28 @@
+users:
+  - name: "cloud_application"
+    username: "cloud_application_username"
+    password: "cloud_application_password"
+    url_map:
+      - src_paths: [ "/api/v1/write" ]
+        url_prefix: "http://victoriametrics:8428?environment=cloud_application"
+
+  - name: "grafana"
+    username: "grafana_username"
+    password: "grafana_password"
+    # read only
+    url_map:
+      - src_paths:
+          - "/api/v1/series"
+          - "/api/v1/query"
+          - "/api/v1/query_range"
+          - "/api/v1/label/[^/]+/values"
+        url_prefix: "http://victoriametrics:8428"
+
+  - name: "alertmanager"
+    username: "alertmanager_username"
+    password: "alertmanager_password"
+    url_prefix: "http://victoriametrics:8428"
+
+  - name: "server"
+    bearer_token: "server_token"
+    url_prefix: "http://victoriametrics:8428?environment=server"

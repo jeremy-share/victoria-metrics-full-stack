@@ -1,0 +1,22 @@
+version: '3.7'
+
+networks:
+  main:
+    name: vm-full-stack-main
+    external: true
+
+services:
+  app:
+    build: .
+    volumes:
+      - ./:/opt/project
+    ports:
+      - "127.0.0.1:8123:80"
+    environment:
+      RUN_PORT: "8123"
+      # METRICS_ENDPOINT: "http://vmauth.cloud-applications.localstack.domain:8427"
+      METRICS_ENDPOINT: "http://127.0.0.1:18427"
+      METRICS_TOKEN: "backend-service"
+    # network_mode: host
+    networks:
+      - main

@@ -1,0 +1,8 @@
+route:
+  receiver: 'sink'
+
+receivers:
+  - name: 'sink'
+    webhook_configs:
+      - url: "http://alertsink:5050/alert"
+        send_resolved: true

@@ -1,0 +1,53 @@
+{
+  "name": "frontend-service",
+  "version": "1.0.0",
+  "description": "Frontend example service",
+  "author": {
+    "name": "Jeremy Sells"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf dist/*",
+    "css:scss": "node-sass --output-style compressed -o dist src/scss",
+    "css:autoprefixer": "npx postcss --use autoprefixer --replace dist/*.css",
+    "css:lint": "stylelint src/scss/*.scss  --custom-syntax postcss-scss",
+    "build:css": "npm run css:lint && npm run css:scss && npm run css:autoprefixer",
+    "watch:css": "onchange \"src/scss\" -- npm run build:css",
+    "build:images": "imagemin src/images/**/* --out-dir=dist/images",
+    "watch:images": "onchange \"src/images\" -- npm run build:images",
+    "build:js": "webpack --mode=production",
+    "watch:js": "onchange \"src/js\" -- webpack --mode=development",
+    "build:html": "posthtml -c posthtml.json",
+    "watch:html": "onchange \"src/views\" -- npm run build:html",
+    "watch": "run-p serve watch:*",
+    "build": "run-p build:*",
+    "serve": "browser-sync start --server \"dist\" --files \"dist\"",
+    "build-clean": "run-s clean build"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.19.3",
+    "autoprefixer": "^10.4.12",
+    "babel-loader": "^8.2.5",
+    "browser-sync": "^2.27.10",
+    "eslint": "^8.24.0",
+    "eslint-webpack-plugin": "^3.2.0",
+    "htmlnano": "^2.0.2",
+    "imagemin-cli": "^7.0.0",
+    "node-sass": "^7.0.3",
+    "npm-run-all": "^4.1.5",
+    "onchange": "^7.1.0",
+    "postcss-cli": "^10.0.0",
+    "postcss-scss": "^4.0.5",
+    "posthtml": "^0.16.6",
+    "posthtml-cli": "^0.10.0",
+    "posthtml-modules": "^0.9.0",
+    "stylelint": "^14.13.0",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "@influxdata/influxdb-client-apis": "^1.31.0",
+    "socket.io": "^4.5.2"
+  }
+}

@@ -1,0 +1,9 @@
+export const api_ip_address = 'ws://127.0.0.1:8123';
+export const metrics_url = 'http://127.0.0.1:10000';
+//export const metrics_url = 'http://127.0.0.1:18427';
+export const metrics_org = 'demo';
+export const metrics_bucket = 'frontend-service';
+export const metrics_token = 'frontend-service-token';
+export const metrics_username = 'frontend_service_username';
+export const metrics_password = 'frontend_service_password';
+export const instance = 'unknown';

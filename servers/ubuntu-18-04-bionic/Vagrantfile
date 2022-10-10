@@ -1,0 +1,31 @@
+# From https://vagrantcloud.com/search
+OS_CODENAME = "bionic"  # 18.04 LTS
+NUMBER_MACHINES = 1
+
+# https://docs.vagrantup.com.
+Vagrant.configure("2") do |config|
+    (1..NUMBER_MACHINES).each do |i|
+        config.vm.define "vm-#{OS_CODENAME}-#{i}" do |machine|
+            # Set a hostname
+            machine.vm.hostname = "vm-#{OS_CODENAME}-#{i}"
+
+            # Base Box
+            config.vm.box = "ubuntu/" + OS_CODENAME + "64"
+
+            # provider
+            config.vm.provider "virtualbox" do |vb|
+                vb.memory = "768"
+                vb.cpus = 1
+                vb.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
+            end
+
+            # Provisioner
+            config.vm.provision "ansible" do |ansible|
+                ansible.playbook = "../ansible/ansible-playbook.yml"
+                ansible.extra_vars = {
+                    "os_codename": OS_CODENAME
+                }
+            end
+        end
+    end
+end

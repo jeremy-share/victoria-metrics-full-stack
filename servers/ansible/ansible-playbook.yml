@@ -1,0 +1,59 @@
+---
+- name: Playbook
+  hosts: all
+  become: true
+  tasks:
+
+    # --- TELEGRAF INSTALL --------------------------------------------------
+
+    - name: Telegraf - Add key
+      apt_key:
+        url: https://repos.influxdata.com/influxdb.key
+        state: present
+
+    - name: Telegraf - Add repo
+      apt_repository:
+        repo: deb https://repos.influxdata.com/ubuntu {{ os_codename }} stable
+        state: present
+        filename: influxdb.list
+        update_cache: true
+
+    - name: Telegraf - Apt install
+      apt:
+        update_cache: yes
+        name:
+          - telegraf
+        state: present
+
+    - name: Telegraf - Custom metrics script
+      copy:
+        src: "files/host-metric.sh"
+        dest: "/opt/host-metric.sh"
+        owner: root
+        group: root
+        mode: '0775'
+
+    - name: Telegraf - Config
+      copy:
+        src: "files/telegraf.conf"
+        dest: "/etc/telegraf/telegraf.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      register: telegraf_config
+
+    - name: Telegraf - Config Sample
+      ansible.builtin.file:
+        path:  "/etc/telegraf/telegraf.conf.sample"
+        state: absent
+      register: telegraf_config_sample
+
+    - name: Telegraf - Service Restart
+      ansible.builtin.service:
+        name: telegraf
+        daemon_reload: yes
+        enabled: true
+        state: restarted
+      changed_when: telegraf_config.changed or telegraf_config_sample.changed
+      check_mode: false
+      # 'journalctl -u telegraf.service' if this fails

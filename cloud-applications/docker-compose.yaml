@@ -1,0 +1,80 @@
+version: '3.7'
+
+# === NETWORKS ==============================================================
+networks:
+  internal: null
+  main:
+    name: vm-full-stack-main
+    external: true
+
+# === VOLUMES ===============================================================
+volumes:
+  vmagentdata: {}
+  vmagentdata-frontend: {}
+
+# === SERVICES ==============================================================
+services:
+
+  vmagent:
+    image: victoriametrics/vmagent:v1.81.2
+    volumes:
+      - vmagentdata:/vmagentdata
+    command:
+      - '--remoteWrite.url=http://vmauth.cloud-infrastructure-storage.localstack.domain:8427/api/v1/write'
+      - '--remoteWrite.basicAuth.username=cloud_application_username'
+      - '--remoteWrite.basicAuth.password=cloud_application_password'
+    networks:
+      internal: null
+      main: null
+
+  vmauth:
+    image: victoriametrics/vmauth:v1.81.2
+    volumes:
+      - "./vmauth/config.yaml:/etc/victoriametrics/config.yaml"
+    command:
+      - '-auth.config=/etc/victoriametrics/config.yaml'
+    ports:
+      # Exposed for the frontend service to write to (if I can get the auth token to work...)
+      - "127.0.0.1:18427:8427"
+    networks:
+      internal: null
+
+  # TEMP until I can figure out frontend auth!
+  # Seems to be a bug in JS InfluxDB client
+  vmagent-frontend:
+    image: victoriametrics/vmagent:v1.81.2
+    volumes:
+      - vmagentdata-frontend:/vmagentdata
+    ports:
+      - "127.0.0.1:10000:8429"
+    command:
+      - '--remoteWrite.url=http://vmauth.cloud-infrastructure-storage.localstack.domain:8427/api/v1/write'
+      - '--remoteWrite.basicAuth.username=cloud_application_username'
+      - '--remoteWrite.basicAuth.password=cloud_application_password'
+      - '-remoteWrite.label=creator=external'
+      #- '--remoteWrite.url=http://vmauth:8427/api/v1/write'
+      # - '--remoteWrite.url=http://vmauth:8427/'
+      # - '--remoteWrite.basicAuth.username=frontend_service_username'
+      # - '--remoteWrite.basicAuth.password=frontend_service_password'
+    networks:
+      internal: null
+      main: null
+
+  backend-service:
+    build:
+      context: backend-service/.
+    ports:
+      - "127.0.0.1:8123:8123"
+    environment:
+      RUN_PORT: "8123"
+      METRICS_TOKEN: "backend-service"
+      METRICS_ENDPOINT: "http://vmauth:8427"
+    networks:
+      internal: null
+
+  frontend-service:
+    image: nginx:1.23.1
+    ports:
+      - "127.0.0.1:80:80"
+    volumes:
+      - ./frontend-service/dist:/usr/share/nginx/html:ro

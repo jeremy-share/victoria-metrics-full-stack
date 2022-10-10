@@ -1,0 +1,51 @@
+version: '3.5'
+
+# === NETWORKS ==============================================================
+networks:
+  internal: null
+  main:
+    name: vm-full-stack-main
+    external: true
+
+# === VOLUMES ===============================================================
+volumes:
+  vmdata: {}
+
+# === SERVICES ==============================================================
+services:
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.81.2
+#    ports:
+#      - "127.0.0.1:8428:8428"
+#      - "127.0.0.1:8089:8089"
+#      - "127.0.0.1:8089:8089/udp"
+#      - "127.0.0.1:2003:2003"
+#      - "127.0.0.1:2003:2003/udp"
+#      - "127.0.0.1:4242:4242"
+    volumes:
+      - vmdata:/storage
+    command:
+      - '--storageDataPath=/storage'
+      - '--graphiteListenAddr=:2003'
+      - '--opentsdbListenAddr=:4242'
+      - '--httpListenAddr=:8428'
+      - '--influxListenAddr=:8089'
+      - '-retentionPeriod=0.5'  # 1/2 a month
+    networks:
+      internal: null
+
+  vmauth:
+    image: victoriametrics/vmauth:v1.81.2
+    volumes:
+      - "./vmauth/config.yaml:/etc/victoriametrics/config.yaml"
+    command:
+      - '-auth.config=/etc/victoriametrics/config.yaml'
+#      - "-pushmetrics.extraLabel='frm='vmauth' '"
+    ports:
+      - "172.17.0.1:8427:8427"
+    networks:
+      internal: null
+      main:
+        aliases:
+          - "vmauth.cloud-infrastructure-storage.localstack.domain"

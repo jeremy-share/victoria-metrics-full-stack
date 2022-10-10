@@ -1,0 +1,69 @@
+version: '3.5'
+
+# === NETWORKS ==============================================================
+networks:
+  vm-full-stack-main:
+    name: vm-full-stack-main
+    external: true
+  local: null
+
+# === VOLUMES ===============================================================
+volumes:
+  grafanadata: {}
+
+# === SERVICES ==============================================================
+services:
+
+  # Visuals
+  grafana:
+    image: grafana/grafana:8.3.2
+    ports:
+      - "127.0.0.1:3002:3000"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+    networks:
+      vm-full-stack-main: null
+
+  # Executes a list of the given alerting or recording rules
+  vmalert:
+    image: victoriametrics/vmalert:v1.72.0
+    depends_on:
+      - "alertmanager"
+    # ports:
+    #  - "127.0.0.1:8880:8880"
+    volumes:
+      - ./vmalert/alerts:/etc/alerts
+    command:
+      - '--datasource.basicAuth.username=alertmanager_username'
+      - '--datasource.basicAuth.password=alertmanager_password'
+      - '--datasource.url=http://vmauth.cloud-infrastructure-storage.localstack.domain:8427/'
+      - '--remoteRead.url=http://vmauth.cloud-infrastructure-storage.localstack.domain:8427/'
+      - '--remoteWrite.url=http://vmauth.cloud-infrastructure-storage.localstack.domain:8427/'
+      - '--notifier.url=http://alertmanager:9093/'
+      - '--rule=/etc/alerts/*.yml'
+      # Display source of alerts in grafana
+      - '-external.url=http://127.0.0.1:3002' # Grafana outside container
+      - '--external.alert.source=explore?orgId=1&left=["now-1h","now","VictoriaMetrics",{"expr":"{{$$expr|quotesEscape|crlfEscape|queryEscape}}"},{"mode":"Metrics"},{"ui":[true,true,true,"none"]}]' ## when copypaste the line be aware of '$$' for escaping in '$expr'
+    networks:
+      vm-full-stack-main: null
+      local: null
+
+  # Handle alerts sent by client applications
+  alertmanager:
+    image:  prom/alertmanager:v0.23.0
+    volumes:
+      - ./alertmanager/config:/config
+    command:
+      - '--config.file=/config/alertmanager.yml'
+    #    ports:
+    #      - "127.0.0.1:9093:9093"
+    networks:
+      local: null
+
+  # View fired alerts using webhook (This replicates what would be Slack, VictorOps or similar in production)
+  alertsink:
+    build: alertsink/.
+    networks:
+      local: null
